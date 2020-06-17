@@ -22,7 +22,9 @@
 #define ADC_HANDLER_H
 
 #include "stdint.h"
-#include "mock_spi.h"
+
+// Halcogen generated SPI driver
+#include "spi.h"
 
 // AD7298 Control Register Map
 #define AD7298_WRITE        (1U << 15U)
@@ -33,26 +35,30 @@
 #define AD7298_TSENSE_AVG   (1U << 1U)
 #define AD7298_PPD          (1U << 0U)
 
+#define AD7298_RES          4096
+
 typedef struct adc_handler_t ADC_Handler;
 
 struct adc_handler_t{
     uint16_t        control_reg_val;   //Current value of the ADC control register
-    unsigned int    adc_res;           //Maximum resolution of the ADC
+
+    // SPI data register configuration 
+    spiDAT1_t       spi_dat_conf;
 };
 
 // Initialize ADC defaults and SPI
-void adc_init(ADC_Handler *handl, unsigned int res);
+void adc_init(ADC_Handler *handl);
 
 //return the raw value from the adc
-void adc_get_raw(ADC_Handler *handl, uint16_t *data);
+void adc_get_raw(ADC_Handler *handl, uint16_t *data, uint8_t *ch);
 
 float adc_get_temp(ADC_Handler *handl, uint16_t value, float vref);
 
-void adc_set_control_reg(ADC_Handler *handl, unsigned char repeat,
-                                             unsigned char channels,
-                                             unsigned char ext_ref,
-                                             unsigned char tsense,
-                                             unsigned char tsense_avg);
+void adc_set_control_reg(ADC_Handler *handl, uint8_t repeat,
+                                             uint8_t channels,
+                                             uint8_t ext_ref,
+                                             uint8_t tsense,
+                                             uint8_t tsense_avg);
 
 //convert raw value to voltage
 //unsigned int adc_();

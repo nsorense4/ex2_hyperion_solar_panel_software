@@ -17,34 +17,58 @@
  * @date    2020-06-15
  */
 
+#include "common_defines.h"
 #include "adc_handler.h"
 #include "demux_handler.h"
 
 
-void adc_init(ADC_Handler *handl, unsigned int res) {
+/**
+ * @brief
+ * 		Initialize ADC_Handler struct
+ * @details
+ * 		<more detailed description of the function>
+ * @param handl
+ * 		Pointer to an ADC_Handler struct
+ * @return
+ * 		None
+ */
+void adc_init(ADC_Handler *handl) {
     //Initialize ADC defaults and SPI here
-    handl->adc_res          = res;
     handl->control_reg_val  = 0;
-    //STORE SPI CS PIN ADDR
-
-    //Initialize spi stuff
-    // spiInit();
     
-    // //These change for each ADC (different SPI CS line) MIGHT NEED TO MOVE/CHANGE THIS
-    // sConfDat.CS_HOLD = TRUE;
-    // sConfDat.WDEL    = TRUE;
-    // sConfDat.DFSEL   = SPI_FMT_0;
-    // sConfDat.CSNR    = 0xFF;
+    //Initialize SPI register configuration (Refer to TMS570LS1224 datasheet)
+    handl->spi_dat_conf.CS_HOLD = TRUE;
+    handl->spi_dat_conf.WDEL    = TRUE;
+    handl->spi_dat_conf.DFSEL   = SPI_FMT_0;
+    handl->spi_dat_conf.CSNR    = 0xFF;
 }
 
-void adc_set_control_reg(ADC_Handler *handl, unsigned char repeat,
-                                             unsigned char channel,
-                                             unsigned char ext_ref,
-                                             unsigned char tsense,
-                                             unsigned char tsense_avg) {
-    
-    spi_write_ExpectAnyArgs(); //CMOCK
-
+/**
+ * @brief
+ * 		Set control register bits.
+ * @details
+ * 		<more detailed description of the function>
+ * @param handl
+ * 		pointer to ADC_Handler struct
+ * @param repeat
+ * 		<if applicable, brief (one line) description of one of the function's arguments>
+ * @param channel
+ * 		<if applicable, brief (one line) description of one of the function's arguments>
+ * @param ext_ref
+ * 		<if applicable, brief (one line) description of one of the function's arguments>
+ * @param tsense
+ * 		<if applicable, brief (one line) description of one of the function's arguments>
+ * @param tsense_avg
+ * 		<if applicable, brief (one line) description of one of the function's arguments>
+ * @return
+ * 		None
+ */
+void adc_set_control_reg(ADC_Handler *handl, uint8_t repeat,
+                                             uint8_t channel,
+                                             uint8_t ext_ref,
+                                             uint8_t tsense,
+                                             uint8_t tsense_avg) 
+{
     uint16_t control_reg_value = 0;
 
     control_reg_value = AD7298_WRITE 
@@ -56,37 +80,60 @@ void adc_set_control_reg(ADC_Handler *handl, unsigned char repeat,
 
     //SET CS PIN LOW
     //send buffer to SPI
-    spi_write(1, &control_reg_value);
+    spiTransmitData(SPI_BASE_ADDR, &(handl->spi_dat_conf), 1, &control_reg_value);
     //SET CS PIN HIGH
 
     handl->control_reg_val = control_reg_value;
+    
 }
 
-/*
- *  @brief Returns the raw value read from an ADC channel.
- * 
- *  @param handl - ADC Handler structure
- * 
+/**
+ * @brief
+ * 		Returns the conversion results from ADC
+ * @details
+ * 		<more detailed description of the function>
+ * @attention
+ * 		<if applicable, any comments or concerns regarding the function>
+ * @param handl
+ * 		<if applicable, brief (one line) description of one of the function's arguments>
+ * @param data
+ * 		<if applicable, brief (one line) description of one of the function's arguments>
+ * @return
+ * 		<if applicable, brief description of what is returned by the function>
  */
-void adc_get_raw(ADC_Handler *handl, uint16_t *data) {  
-    spi_read_ExpectAnyArgs(); //CMOCK
-
+void adc_get_raw(ADC_Handler *handl, uint16_t *data, uint8_t *ch) 
+{  
     uint16_t buffer = 0;
 
     //SET CS PIN LOW 
     //SPI read into value
-    spi_read(1, &buffer);
+    spiReceiveData(SPI_BASE_ADDR, &(handl->spi_dat_conf), 1, &buffer);
     //SET CS PIN HIGH
 
     *data = buffer & 0x0FFF;
     //get data channel as well.
+    *ch   = (buffer >> 12);
 }
 
+/**
+ * @brief
+ * 		<breif (one line) description of the function>
+ * @details
+ * 		<more detailed description of the function>
+ * @attention
+ * 		<if applicable, any comments or concerns regarding the function>
+ * @param <argument_1>
+ * 		<if applicable, brief (one line) description of one of the function's arguments>
+ * @param <argument_2>
+ * 		<if applicable, brief (one line) description of one of the function's arguments>
+ * @return
+ * 		<if applicable, brief description of what is returned by the function>
+ */
 float adc_get_temp(ADC_Handler *handl, uint16_t value, float vref) {
     float temp_celsius = 0;
 
     if(value >= 0x800) {
-        value  = handl->adc_res - value;
+        value  = AD7298_RES - value;
         value *= -1;
     }
 
