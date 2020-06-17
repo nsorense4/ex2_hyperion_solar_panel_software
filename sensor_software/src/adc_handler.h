@@ -40,29 +40,29 @@
 typedef struct adc_handler_t ADC_Handler;
 
 struct adc_handler_t{
-    uint16_t        control_reg_val;   //Current value of the ADC control register
+    //Current value of the ADC control register
+    uint16_t  control_reg_val;   
 
     // SPI data register configuration 
-    spiDAT1_t       spi_dat_conf;
+    spiDAT1_t spi_dat_conf;
 };
 
 // Initialize ADC defaults and SPI
 void adc_init(ADC_Handler *handl);
-
-//return the raw value from the adc
-void adc_get_raw(ADC_Handler *handl, uint16_t *data, uint8_t *ch);
-
-float adc_get_temp(ADC_Handler *handl, uint16_t value, float vref);
-
 void adc_set_control_reg(ADC_Handler *handl, uint8_t repeat,
                                              uint8_t channels,
                                              uint8_t ext_ref,
                                              uint8_t tsense,
                                              uint8_t tsense_avg);
 
-//convert raw value to voltage
-//unsigned int adc_();
+//return the raw value from the adc
+void adc_get_raw(ADC_Handler *handl, uint16_t *data, uint8_t *ch);
 
-//DEMUX PIN SETTING
+
+float adc_conv_to_volt(ADC_Handler *handl, uint16_t value, float vref);
+float adc_conv_to_celsius(ADC_Handler *handl, uint16_t value, float vref);
+
+float adc_get_tsense_temp(ADC_Handler *handl, uint16_t value, float vref);
+
 
 #endif

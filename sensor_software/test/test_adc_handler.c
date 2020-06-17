@@ -27,15 +27,36 @@ ADC_Handler handle;
 
 void setUp(void)
 {
-    adc_init(&handle, 4096);
+    
 }
 
 void tearDown(void)
 {
 }
 
+void test_adc_volt_conv(void) {
+    adc_init(&handle);
+
+    spiTransmitData_ExpectAnyArgsAndReturn(0xFF);
+    adc_set_control_reg(&handle, 0, 2, 0, 0, 0);
+
+    uint16_t mock_rx_buffer = 0x0FFF;
+    spiReceiveData_ExpectAnyArgsAndReturn(0xFF);
+    spiReceiveData_ReturnArrayThruPtr_destbuff(&mock_rx_buffer, 1);
+    uint16_t conv_data = 0;
+    uint8_t  current_channel = 0;
+    adc_get_raw(&handle, &conv_data, &current_channel);
+
+    float sensor_voltage = 0;
+    sensor_voltage = adc_conv_to_volt(&handle, conv_data, 5);
+
+    TEST_ASSERT_EQUAL_HEX16(0xA000, handle.control_reg_val);
+    TEST_ASSERT_FLOAT_WITHIN(0.05, 5, sensor_voltage);
+    TEST_ASSERT_EQUAL_UINT8(0, current_channel);
+}
+
 void test_adc_handler_getVal(void) 
 {
-
-    TEST_ASSERT_EQUAL_FLOAT(25.0, temp);
+    TEST_IGNORE();
+    //TEST_ASSERT_EQUAL_FLOAT(25.0, temp);
 }
