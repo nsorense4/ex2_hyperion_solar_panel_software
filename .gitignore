@@ -51,5 +51,5 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
-/.vscode
-sensor_software/build
+.vscode/
+sensor_software/build/
