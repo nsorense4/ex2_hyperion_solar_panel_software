@@ -1,3 +1,23 @@
+/*
+ * Copyright (C) 2015  University of Alberta
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+/**
+ * @file    adc_handler.h
+ * @author  Vasu Gupta
+ * @date    2020-06-15
+ */
+
+
 #ifndef ADC_HANDLER_H
 #define ADC_HANDLER_H
 
@@ -5,13 +25,13 @@
 #include "mock_spi.h"
 
 // AD7298 Control Register Map
-#define AD7298_WRITE        (1 << 15)
-#define AD7298_REPEAT       (1 << 14)
-#define AD7298_CH(x)        (1 << (13 - x))
-#define AD7298_TSENSE       (1 << 5)
-#define AD7298_EXT_REF      (1 << 2)
-#define AD7298_TSENSE_AVG   (1 << 1)
-#define AD7298_PPD          (1 << 0)
+#define AD7298_WRITE        (1U << 15U)
+#define AD7298_REPEAT       (1U << 14U)
+#define AD7298_CH(x)        (1U << ((13U) - x))
+#define AD7298_TSENSE       (1U << 5U)
+#define AD7298_EXT_REF      (1U << 2U)
+#define AD7298_TSENSE_AVG   (1U << 1U)
+#define AD7298_PPD          (1U << 0U)
 
 typedef struct adc_handler_t ADC_Handler;
 
