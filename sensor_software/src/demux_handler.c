@@ -12,16 +12,23 @@
  * GNU General Public License for more details.
  */
 /**
- * demux.c
- * Noah Rozario
- * 2020/6/17
+ * @file    demux.c
+ * @author  Noah Rozario
+ * @date    2020-06-17
  */
 
-#include "HL_gio.c"
-#include "HL_mibspi.c"
-#include "demux.h"
 
-void demux(enum panel_CS panel)
+#include "gio.h"
+#include "spi.h"
+#include "demux_handler.h"
+
+/**
+ * @brief
+ *      Allows user to select specific Hyperion panel ADC using the 74AHC138 demux
+ * @param panel
+ *      variable panel of data type panel_CS which represents the different hyperion panels ex: cs_P, cs_PD etc
+ */
+void set_pin(enum panel_CS panel)
 {
     gioInit(); //initialising gio ports
     switch(panel)
@@ -62,7 +69,7 @@ void demux(enum panel_CS panel)
         gioSetBit(gioPORTB,7,1); // set a1 high
         gioSetBit(gioPORTA,3,1); // set a2 high
         break;
-    case all:
+    default:
         //enable all pins
         break;
     }

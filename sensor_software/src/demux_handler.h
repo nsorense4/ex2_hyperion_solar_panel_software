@@ -27,12 +27,8 @@ enum panel_CS{ //defining data type panel_CS which represents hyperion panels
     cs_S,
     cs_N
 };
-/*
- * demux function:
- * allows user to select specific Hyperion panel ADC using the 74AHC138 demux
- * input argument:
- * -panel_CS panel- variable panel of data type panel_CS which represents the different hyperion panels ex: cs_P, cs_PD etc
- */
-void demux(enum panel_CS panel);
+
+
+void set_pin(enum panel_CS panel);
 
 #endif
