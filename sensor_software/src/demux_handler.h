@@ -12,39 +12,27 @@
  * GNU General Public License for more details.
  */
 /**
- * @file <file_name>.<ext>
- * @author <author_names>
- * @date YYYY-MM-DD
+ * demux.h
+ * Noah Rozario
+ * 2020/6/17
  */
+#ifndef DEMUX_H
+#define DEMUX_H
 
-#ifndef DEMUX_HANDLER_H
-#define DEMUX_HANDLER_H
-
-//#include "gio.h"
-
-enum pin_state_t{
-    LOW = 0,
-    HIGH
+enum panel_CS{ //defining data type panel_CS which represents hyperion panels
+    cs_P = 0,
+    cs_PD,
+    cs_Z,
+    cs_SD,
+    cs_S,
+    cs_N
 };
+/*
+ * demux function:
+ * allows user to select specific Hyperion panel ADC using the 74AHC138 demux
+ * input argument:
+ * -panel_CS panel- variable panel of data type panel_CS which represents the different hyperion panels ex: cs_P, cs_PD etc
+ */
+void demux(enum panel_CS panel);
 
-enum spi_cs_line_t{
-    SPI_CS_P = 0,
-    SPI_CS_PD,
-    SPI_CS_Z,
-    SPI_CS_SD,
-    SPI_CS_S,
-    SPI_CS_N 
-};
-
-typedef struct demux_handler_t DEMUX_Handler;
-
-struct demux_handler_t{
-    //gioPORT_t *gio_port_addr;
-}demux_handler_t;
-
-
-// void demux_init(DEMUX_Handler *handl, gioPORT_t *gio);
-
-void set_pin(enum spi_cs_line_t, enum pin_state_t);
-
-#endif // DEMUX_HANDLER_H
+#endif

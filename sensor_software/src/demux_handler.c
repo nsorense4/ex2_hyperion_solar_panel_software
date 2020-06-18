@@ -12,49 +12,60 @@
  * GNU General Public License for more details.
  */
 /**
- * @file <file_name>.<ext>
- * @author <author_names>
- * @date YYYY-MM-DD
+ * demux.c
+ * Noah Rozario
+ * 2020/6/17
  */
 
+#include "HL_gio.c"
+#include "HL_mibspi.c"
+#include "demux.h"
 
-#include "demux_handler.h"
-
-
-// void demux_init(DEMUX_Handler *handl, gioPORT_t *gio){
-//     handl->gio_port_addr = gio;
-
-//     gioInit();
-// }
-
-void set_pin(enum spi_cs_line_t cs_line, enum pin_state_t state) {
-    switch(cs_line){
-        case SPI_CS_N:
-            //gioSetBit(demux_handler_t.gio_port_addr, SPI_CS_N, state);
-            //SET OUTPUT Y7
+void demux(enum panel_CS panel)
+{
+    gioInit(); //initialising gio ports
+    switch(panel)
+    {
+    case cs_P:
+        //enable y2(010)
+        //set a0 low
+        gioSetBit(gioPORTB,7,1); // set a1 high
+        gioSetBit(gioPORTA,3,0); // set a2 low
         break;
-
-        case SPI_CS_P:
-            //SET OUTPUT Y13
+    case cs_PD:
+        //enable y3(011)
+        //set a0 high
+        gioSetBit(gioPORTB,7,1); // set a1 high
+        gioSetBit(gioPORTA,3,0); // set a2 low
         break;
-
-        case SPI_CS_PD:
-            //SET OUTPUT Y12
+    case cs_Z:
+        //enable y4(100)
+        //set a0 low
+        gioSetBit(gioPORTB,7,0); // set a1 low
+        gioSetBit(gioPORTA,3,1); // set a2 high
         break;
-
-        case SPI_CS_S:
-            //SET OUTPUT Y9
+    case cs_SD:
+        //enAble y5(101)
+        //set a0 high
+        gioSetBit(gioPORTB,7,0); // set a1 low
+        gioSetBit(gioPORTA,3,1); // set a2 high
         break;
-
-        case SPI_CS_SD:
-            //SET OUTPUT Y10
+    case cs_S:
+        //enable y6(110)
+        //set a0 low
+        gioSetBit(gioPORTB,7,1); // set a1 high
+        gioSetBit(gioPORTA,3,1); // set a2 high
         break;
-
-        case SPI_CS_Z:
-            //SET OUTPUT Y11
+    case cs_N:
+        //enable y7(111)
+        //set a0 high
+        gioSetBit(gioPORTB,7,1); // set a1 high
+        gioSetBit(gioPORTA,3,1); // set a2 high
         break;
-
-        default:
+    case all:
+        //enable all pins
         break;
-    };
+    }
 }
+
+
