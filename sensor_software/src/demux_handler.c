@@ -19,7 +19,6 @@
 
 
 #include "gio.h"
-#include "spi.h"
 #include "demux_handler.h"
 
 /**

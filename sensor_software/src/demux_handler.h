@@ -16,8 +16,8 @@
  * Noah Rozario
  * 2020/6/17
  */
-#ifndef DEMUX_H
-#define DEMUX_H
+#ifndef DEMUX_HANDLER_H
+#define DEMUX_HANDLER_H
 
 enum panel_CS{ //defining data type panel_CS which represents hyperion panels
     cs_P = 0,

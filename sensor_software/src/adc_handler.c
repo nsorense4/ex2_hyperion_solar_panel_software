@@ -141,13 +141,32 @@ void adc_get_raw(ADC_Handler *handl, uint16_t *data, uint8_t *ch)
  * @return
  * 		Value in volts.
  */
-float adc_conv_to_volt(ADC_Handler *handl, uint16_t value, float vref) {
+float adc_conv_to_volt(uint16_t value, float vref) {
     float volts = 0;
 
     // from AD7298 datasheet
     volts = ((float)value * vref) / AD7298_RES;
 
     return volts;
+}
+
+/**
+ * @brief
+ * 		Calculates temperature in celsius from temperature sensor output voltage.
+ * @param volt
+ * 		Voltage output from temperature sensor
+ * @return
+ * 		Value in volts.
+ */
+float adc_conv_to_celsius(float volt) {
+    float celsius = 0;
+
+    celsius = (volt*1000) - TEMP_VOLT_MIN;
+    celsius = (celsius * (TEMP_VAL_MAX - TEMP_VAL_MIN)) 
+                / (TEMP_VOLT_MAX - TEMP_VOLT_MIN);
+    celsius = TEMP_VAL_MAX - celsius;
+    
+    return celsius;
 }
 
 /**
@@ -170,7 +189,7 @@ float adc_conv_to_volt(ADC_Handler *handl, uint16_t value, float vref) {
  * @return
  * 		Temperature value in celsius
  */
-float adc_get_tsense_temp(ADC_Handler *handl, uint16_t value, float vref) {
+float adc_get_tsense_temp(uint16_t value, float vref) {
     float temp_celsius = 0;
 
     if(value >= 0x800) {
