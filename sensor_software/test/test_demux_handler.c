@@ -21,6 +21,7 @@
 #include "unity.h"
 
 #include "demux_handler.h"
+#include "mock_gio.h"
 
 void setUp(void)
 {
