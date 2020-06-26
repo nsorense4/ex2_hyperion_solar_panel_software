@@ -17,8 +17,32 @@
  * @date    2020-06-17
  */
 
+#ifndef COMMON_DEFINES_H
+#define COMMON_DEFINES_H
+
 #include "reg_spi.h"
 
 // SPI defines
 #define SPI_BASE_ADDR spiREG3
 
+
+enum channel_type_t{
+    CHANNEL_TEMP_1 = 0,
+    CHANNEL_TEMP_2,
+    CHANNEL_TEMP_3,
+    CHANNEL_VOLT,
+    CHANNEL_CURR,
+    CHANNEL_NUM         // Number of ADC channels
+};
+
+enum panel_t{
+    PANEL_1 = 0,
+    PANEL_2,
+    PANEL_3,
+    PANEL_4,
+    PANEL_5,
+    PANEL_6,
+    PANEL_NUM          // Number of solar panels
+};
+
+#endif
