@@ -19,7 +19,6 @@
 
 
 #include "unity.h"
-
 #include "panel_handler.h"
 
 void setUp(void)
@@ -30,7 +29,24 @@ void tearDown(void)
 {
 }
 
-void test_sensor_NeedToImplement(void)
+void test_CombinedMeasurements(void)
 {
-    TEST_IGNORE_MESSAGE("Need to Implement sensor");
+    
+
+    TEST_IGNORE_MESSAGE("Need to Implement CombinedMeasurements");
+}
+
+void test_SingleMeasurementsAnyPanel(void)
+{
+    TEST_IGNORE_MESSAGE("Need to Implement SingleMeasurementsAnyPanel");
+}
+
+void test_AllMeasurementsAnyPanel(void)
+{
+    TEST_IGNORE_MESSAGE("Need to Implement AllMeasurementsAnyPanel");
+}
+
+void test_AllMeasurementsAllPanels(void)
+{
+    TEST_IGNORE_MESSAGE("Need to Implement AllMeasurementsAllPanels");
 }
