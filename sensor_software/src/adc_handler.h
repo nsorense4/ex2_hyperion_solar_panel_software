@@ -51,10 +51,13 @@ struct adc_handler_t{
 
     // SPI data register configuration 
     spiDAT1_t spi_dat_conf;
+
+    // Select Panel
+    enum panel_t panel;
 };
 
 // Initialize ADC defaults and SPI
-void adc_init(ADC_Handler *handl);
+void adc_init(ADC_Handler *handl, enum panel_t panel);
 void adc_set_control_reg(ADC_Handler *handl, uint8_t repeat,
                                              uint8_t channels,
                                              uint8_t ext_ref,
@@ -66,10 +69,14 @@ void adc_get_raw(ADC_Handler *handl, uint16_t *data, uint8_t *ch);
 
 
 float adc_conv_to_volt(uint16_t value, float vref);
-float adc_conv_to_celsius(float volt);
+float adc_conv_to_celsius(uint16_t value, float vref);
+float adc_conv_to_current(uint16_t value, float vref);
 
-
+// convert internal temp sensor value
 float adc_get_tsense_temp(uint16_t value, float vref);
 
+// SPI Read/Write functions
+void write_spi(ADC_Handler *handl, uint16_t *data, uint32_t len);
+void read_spi(ADC_Handler *handl, uint16_t *data, uint32_t len);
 
 #endif

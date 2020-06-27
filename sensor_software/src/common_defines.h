@@ -25,6 +25,8 @@
 // SPI defines
 #define SPI_BASE_ADDR spiREG3
 
+#define HIGH 1
+#define LOW  0
 
 enum channel_type_t{
     CHANNEL_TEMP_1 = 0,

@@ -24,6 +24,50 @@
 
 /**
  * @brief
+ * 		Send value over SPI
+ * @details
+ * 		This function uses Halcogen generated SPI drivers to send data over SPI.
+ *      The CS lines are set accordingly using demux_handler functions.
+ * @param handl
+ * 		Pointer to an ADC_Handler struct
+ * @param data
+ * 		Pointer to data buffer
+ * @param len
+ * 		Size of data buffer
+ * @return
+ * 		None
+ */
+void write_spi(ADC_Handler *handl, uint16_t *data, uint32_t len) 
+{
+    //demux_select_pin();
+    spiTransmitData(SPI_BASE_ADDR, &(handl->spi_dat_conf), len, data);
+    //demux_reset();
+}
+
+/**
+ * @brief
+ * 		Receive value over SPI
+ * @details
+ * 		This function uses Halcogen generated SPI drivers to receive data over SPI.
+ *      The CS lines are set accordingly using demux_handler functions.
+ * @param handl
+ * 		Pointer to an ADC_Handler struct
+ * @param data
+ * 		Pointer to data buffer
+ * @param len
+ * 		Size of data buffer
+ * @return
+ * 		None
+ */
+void read_spi(ADC_Handler *handl, uint16_t *data, uint32_t len) 
+{
+    //demux_select_pin();
+    spiReceiveData(SPI_BASE_ADDR, &(handl->spi_dat_conf), len, data);
+    //demux_reset();
+}
+
+/**
+ * @brief
  * 		Initialize ADC_Handler struct
  * @details
  * 		This function sets the default control register value, 
@@ -33,7 +77,7 @@
  * @return
  * 		None
  */
-void adc_init(ADC_Handler *handl) {
+void adc_init(ADC_Handler *handl, enum panel_t panel) {
     //Initialize ADC defaults and SPI here
     handl->control_reg_val  = 0;
     
@@ -42,6 +86,8 @@ void adc_init(ADC_Handler *handl) {
     handl->spi_dat_conf.WDEL    = TRUE;
     handl->spi_dat_conf.DFSEL   = SPI_FMT_0;
     handl->spi_dat_conf.CSNR    = 0xFF;
+
+    handl->panel = panel;
 }
 
 /**
@@ -87,10 +133,8 @@ void adc_set_control_reg(ADC_Handler *handl, uint8_t repeat,
                       | (tsense     * AD7298_TSENSE)
                       | (tsense_avg * AD7298_TSENSE_AVG);
 
-    //SET CS PIN LOW
     //send buffer to SPI
-    spiTransmitData(SPI_BASE_ADDR, &(handl->spi_dat_conf), 1, &control_reg_value);
-    //SET CS PIN HIGH
+    write_spi(handl, &control_reg_value, 1);    
 
     handl->control_reg_val = control_reg_value;
     
@@ -115,11 +159,8 @@ void adc_get_raw(ADC_Handler *handl, uint16_t *data, uint8_t *ch)
 {  
     uint16_t buffer = 0;
 
-    //SET CS PIN LOW 
     //SPI read into value
-    spiReceiveData(SPI_BASE_ADDR, &(handl->spi_dat_conf), 1, &buffer);
-    //SET CS PIN HIGH
-
+    read_spi(handl, &buffer, 1);
     
     *data = buffer & 0x0FFF;
     
@@ -130,8 +171,6 @@ void adc_get_raw(ADC_Handler *handl, uint16_t *data, uint8_t *ch)
 /**
  * @brief
  * 		Converts the given raw ADC value to volts (relative to reference voltage).
- * @param handl
- * 		Pointer to ADC_Handler struct
  * @param value
  * 		The raw ADC value
  *      This value can be retrieved using adc_get_raw(..)
@@ -153,30 +192,35 @@ float adc_conv_to_volt(uint16_t value, float vref) {
 /**
  * @brief
  * 		Calculates temperature in celsius from temperature sensor output voltage.
- * @param volt
- * 		Voltage output from temperature sensor
+ * @param value
+ * 		The raw ADC value
+ *      This value can be retrieved using adc_get_raw(..)
+ * @param vref
+ * 		The value of reference voltage provided to the ADC module
+ *      Refer to AD7298 datasheet.
  * @return
- * 		Value in volts.
+ * 		Value in celsius.
  */
-float adc_conv_to_celsius(float volt) {
-    float celsius = 0;
+float adc_conv_to_celsius(uint16_t value, float vref) {
+    float val = adc_conv_to_volt(value, vref);
 
-    celsius = (volt*1000) - TEMP_VOLT_MIN;
-    celsius = (celsius * (TEMP_VAL_MAX - TEMP_VAL_MIN)) 
+    val = (val*1000) - TEMP_VOLT_MIN;
+    val = (val * (TEMP_VAL_MAX - TEMP_VAL_MIN)) 
                 / (TEMP_VOLT_MAX - TEMP_VOLT_MIN);
-    celsius = TEMP_VAL_MAX - celsius;
+    val = TEMP_VAL_MAX - val;
     
-    return celsius;
+    return val;
 }
 
 /**
  * @brief
- * 		Converts given raw ADC temperature value to celsius (relative tp reference voltage)
+ * 		Converts given raw ADC temperature value (from internal temp sensor) to celsius 
+ *      (relative to reference voltage)
  * @details
  * 		The raw ADC value is retrieved from the TSENSE channel on the ADC
  *      Refer to AD7298 datasheet.
  * @attention
- * 		This function is to be used only if 'TSENSE' on the ADC is enabled.
+ * 		This function is to be used only if 'TSENSE' on the ADC control reg. is enabled.
  * @param handl
  * 		Pointer to ADC_Handler struct
  * @param value
