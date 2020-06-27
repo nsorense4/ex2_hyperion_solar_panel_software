@@ -170,21 +170,21 @@ void adc_get_raw(ADC_Handler *handl, uint16_t *data, uint8_t *ch)
 
 /**
  * @brief
- * 		Converts the given raw ADC value to volts (relative to reference voltage).
+ * 		Converts the given raw ADC value to voltage (mV), relative to reference voltage.
  * @param value
  * 		The raw ADC value
  *      This value can be retrieved using adc_get_raw(..)
  * @param vref
- * 		The value of reference voltage provided to the ADC module
+ * 		The value of reference voltage (in mV) provided to the ADC module
  *      Refer to AD7298 datasheet.
  * @return
- * 		Value in volts.
+ * 		Value in mV.
  */
-float adc_conv_to_volt(uint16_t value, float vref) {
-    float volts = 0;
+int16_t adc_conv_to_volt(uint16_t value, int16_t vref) {
+    int16_t volts = 0;
 
     // from AD7298 datasheet
-    volts = ((float)value * vref) / AD7298_RES;
+    volts = ((int16_t)value * vref) / AD7298_RES;
 
     return volts;
 }
@@ -196,20 +196,22 @@ float adc_conv_to_volt(uint16_t value, float vref) {
  * 		The raw ADC value
  *      This value can be retrieved using adc_get_raw(..)
  * @param vref
- * 		The value of reference voltage provided to the ADC module
+ * 		The value of reference voltage (in mV) provided to the ADC module
  *      Refer to AD7298 datasheet.
  * @return
  * 		Value in celsius.
  */
-float adc_conv_to_celsius(uint16_t value, float vref) {
-    float val = adc_conv_to_volt(value, vref);
+float adc_conv_to_celsius(uint16_t value, int16_t vref) {
+    int16_t temp_voltage = adc_conv_to_volt(value, vref);
 
-    val = (val*1000) - TEMP_VOLT_MIN;
-    val = (val * (TEMP_VAL_MAX - TEMP_VAL_MIN)) 
+    float celsius = 0;
+
+    celsius = temp_voltage - TEMP_VOLT_MIN;
+    celsius = (celsius * (TEMP_VAL_MAX - TEMP_VAL_MIN)) 
                 / (TEMP_VOLT_MAX - TEMP_VOLT_MIN);
-    val = TEMP_VAL_MAX - val;
+    celsius = TEMP_VAL_MAX - celsius;
     
-    return val;
+    return celsius;
 }
 
 /**
@@ -228,12 +230,12 @@ float adc_conv_to_celsius(uint16_t value, float vref) {
  *      This value can be retrieved usig adc_get_raw(..) and when 'TSENSE' is enabled
  *      by setting the control register
  * @param vref
- * 		The value of reference voltage provided to the ADC module
+ * 		The value of reference voltage (in mV) provided to the ADC module
  *      Refer to AD7298 datasheet.
  * @return
  * 		Temperature value in celsius
  */
-float adc_get_tsense_temp(uint16_t value, float vref) {
+float adc_get_tsense_temp(uint16_t value, int16_t vref) {
     float temp_celsius = 0;
 
     if(value >= 0x800) {

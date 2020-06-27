@@ -35,7 +35,7 @@ void tearDown(void)
 }
 
 void test_adc_volt_conv(void) {
-    adc_init(&handle);
+    adc_init(&handle, PANEL_1);
 
     spiTransmitData_ExpectAnyArgsAndReturn(0xFF);
     adc_set_control_reg(&handle, 0, 2, 0, 0, 0);
@@ -47,17 +47,17 @@ void test_adc_volt_conv(void) {
     uint8_t  current_channel;
     adc_get_raw(&handle, &conv_data, &current_channel);
 
-    float sensor_voltage = 0;
-    sensor_voltage = adc_conv_to_volt(conv_data, 5);
+    int16_t sensor_voltage = 0;
+    sensor_voltage = adc_conv_to_volt(conv_data, 5000);
 
-    TEST_ASSERT_FLOAT_WITHIN(0.005, 2.5, sensor_voltage);
+    TEST_ASSERT_INT16_WITHIN(50, 2500, sensor_voltage);
     
     TEST_ASSERT_EQUAL_UINT8(0, current_channel);
 }
 
 void test_adc_temp_conv(void) 
 {
-    adc_init(&handle);
+    adc_init(&handle, PANEL_1);
 
     spiTransmitData_ExpectAnyArgsAndReturn(0xFF);
     adc_set_control_reg(&handle, 0, 2, 0, 0, 0);
@@ -68,12 +68,8 @@ void test_adc_temp_conv(void)
     uint16_t conv_data;
     uint8_t  current_channel;
     adc_get_raw(&handle, &conv_data, &current_channel);
-    
-    float sensor_voltage = 0;
-    sensor_voltage = adc_conv_to_volt(conv_data, 2.5);
-    TEST_ASSERT_FLOAT_WITHIN(0.005, 0.302, sensor_voltage);
 
     float temp = 0;
-    temp = adc_conv_to_celsius(sensor_voltage);
+    temp = adc_conv_to_celsius(conv_data, 2500);
     TEST_ASSERT_FLOAT_WITHIN(0.5, 150, temp);
 }
