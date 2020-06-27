@@ -28,10 +28,24 @@
 #define HIGH 1
 #define LOW  0
 
+// VIN channels on ADC for sensors 
+#define ADC_CHANNEL_TEMP_1      0
+#define ADC_CHANNEL_TEMP_2      1
+#define ADC_CHANNEL_TEMP_3      2
+#define ADC_CHANNEL_PD_1        3
+#define ADC_CHANNEL_PD_2        4
+#define ADC_CHANNEL_PD_3        5
+#define ADC_CHANNEL_VOLT        6
+#define ADC_CHANNEL_CURRENT     7
+
+
 enum channel_type_t{
     CHANNEL_TEMP_1 = 0,
     CHANNEL_TEMP_2,
     CHANNEL_TEMP_3,
+    CHANNEL_PD_1,
+    CHANNEL_PD_2,
+    CHANNEL_PD_3,
     CHANNEL_VOLT,
     CHANNEL_CURR,
     CHANNEL_NUM         // Number of ADC channels
