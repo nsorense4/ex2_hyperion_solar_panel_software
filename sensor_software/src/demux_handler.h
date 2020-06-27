@@ -19,16 +19,22 @@
 #ifndef DEMUX_HANDLER_H
 #define DEMUX_HANDLER_H
 
-enum panel_CS{ //defining data type panel_CS which represents hyperion panels
-    cs_P = 0,
-    cs_PD,
-    cs_Z,
-    cs_SD,
-    cs_S,
-    cs_N
+//Updated this to DEMUX output channels instead**
+enum demux_out_pins{ //defining data type panel_CS which represents hyperion panels
+    OUT_Y0 = 0,
+    OUT_Y1,
+    OUT_Y2,
+    OUT_Y3,
+    OUT_Y4,
+    OUT_Y5,
+    OUT_Y6,
+    OUT_Y7
 };
 
+//Bring output pin (Y0...Y7) to low
+void demux_select_pin(enum demux_out_pins);
 
-void set_pin(enum panel_CS panel);
+//Set all output pins back to high
+void demux_reset();
 
 #endif
