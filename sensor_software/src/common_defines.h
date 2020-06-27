@@ -23,11 +23,13 @@
 #include "reg_spi.h"
 
 // SPI defines
-#define SPI_BASE_ADDR spiREG3
+#define SPI_BASE_ADDR           spiREG3
 
-#define HIGH 1
-#define LOW  0
-
+#define HIGH                    1
+#define LOW                     0
+ 
+#define ADC_VREF                2.5f       //V
+ 
 // VIN channels on ADC for sensors 
 #define ADC_CHANNEL_TEMP_1      0
 #define ADC_CHANNEL_TEMP_2      1
@@ -37,6 +39,20 @@
 #define ADC_CHANNEL_PD_3        5
 #define ADC_CHANNEL_VOLT        6
 #define ADC_CHANNEL_CURRENT     7
+
+// Temperature Sensor (LMT70) constants
+#define TEMP_VOLT_MAX           1.375f      //V
+#define TEMP_VOLT_MIN           0.302f      //V
+#define TEMP_VAL_MAX            150         //celsius
+#define TEMP_VAL_MIN            -55         //celsius
+
+// Voltage/Current Sensor Constants
+#define ADC_VOLT_MAX            2.5f        //V
+#define ADC_VOLT_MIN            0           //V
+#define VOLT_MAX                5.44f       //V
+#define VOLT_MIN                0           //V
+#define CURR_MAX                1.437f      //A
+#define CURR_MIN                0           //A
 
 
 enum channel_type_t{
@@ -52,13 +68,13 @@ enum channel_type_t{
 };
 
 enum panel_t{
-    PANEL_1 = 0,
-    PANEL_2,
-    PANEL_3,
-    PANEL_4,
-    PANEL_5,
-    PANEL_6,
-    PANEL_NUM          // Number of solar panels
+    PANEL_P = 0,        
+    PANEL_PD,
+    PANEL_Z,
+    PANEL_SD,
+    PANEL_S,
+    PANEL_N,
+    PANEL_NUM           // Number of solar panels
 };
 
 #endif

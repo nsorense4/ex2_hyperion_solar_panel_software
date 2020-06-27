@@ -146,6 +146,9 @@ void adc_set_control_reg(ADC_Handler *handl, uint8_t repeat,
  * @details
  * 		The ADC returns a 16-bit value, in which the 4 MSB are channel address bits,
  *      and the remaining 12 is the raw ADC value
+ * @attention
+ *      This function MUST be called twice (second time gives the correct value).
+ *      According to the AD7298 datasheet, first read from DOUT will always be invalid.
  * @param handl
  * 		Pointer to ADC_Handler struct
  * @param data
@@ -180,11 +183,11 @@ void adc_get_raw(ADC_Handler *handl, uint16_t *data, uint8_t *ch)
  * @return
  * 		Value in mV.
  */
-int16_t adc_conv_to_volt(uint16_t value, int16_t vref) {
-    int16_t volts = 0;
+float adc_calculate_vin(uint16_t value, float vref) {
+    float volts = 0;
 
     // from AD7298 datasheet
-    volts = ((int16_t)value * vref) / AD7298_RES;
+    volts = ((float)value * vref) / AD7298_RES;
 
     return volts;
 }
@@ -201,8 +204,8 @@ int16_t adc_conv_to_volt(uint16_t value, int16_t vref) {
  * @return
  * 		Value in celsius.
  */
-float adc_conv_to_celsius(uint16_t value, int16_t vref) {
-    int16_t temp_voltage = adc_conv_to_volt(value, vref);
+float adc_calculate_sensor_temp(uint16_t value, float vref) {
+    float temp_voltage = adc_calculate_vin(value, vref);
 
     float celsius = 0;
 
@@ -212,6 +215,66 @@ float adc_conv_to_celsius(uint16_t value, int16_t vref) {
     celsius = TEMP_VAL_MAX - celsius;
     
     return celsius;
+}
+
+/**
+ * @brief
+ * 		Converts the given raw ADC value to voltage (mV), relative to reference voltage.
+ * @param value
+ * 		The raw ADC value
+ *      This value can be retrieved using adc_get_raw(..)
+ * @param vref
+ * 		The value of reference voltage (in mV) provided to the ADC module
+ *      Refer to AD7298 datasheet.
+ * @return
+ * 		Value in mV.
+ */
+float adc_calculate_sensor_voltage(uint16_t value, float vref) {
+    float val = adc_calculate_vin(value, vref);
+
+    val = val * ((VOLT_MAX - VOLT_MIN) / (ADC_VOLT_MAX - ADC_VOLT_MIN)); 
+
+    return val;
+}
+
+/**
+ * @brief
+ * 		Converts the given raw ADC value to current (mA), relative to reference voltage.
+ * @param value
+ * 		The raw ADC value
+ *      This value can be retrieved using adc_get_raw(..)
+ * @param vref
+ * 		The value of reference voltage (in mV) provided to the ADC module
+ *      Refer to AD7298 datasheet.
+ * @return
+ * 		Value in mA.
+ */
+float adc_calculate_sensor_current(uint16_t value, float vref)
+{
+    float val = adc_calculate_vin(value, vref);
+
+    val = val * ((CURR_MAX - CURR_MIN) / (ADC_VOLT_MAX - ADC_VOLT_MIN)); 
+
+    return val;
+}
+
+/**
+ * @brief
+ * 		Calculates temperature in celsius from temperature sensor output voltage.
+ * @param value
+ * 		The raw ADC value
+ *      This value can be retrieved using adc_get_raw(..)
+ * @param vref
+ * 		The value of reference voltage (in mV) provided to the ADC module
+ *      Refer to AD7298 datasheet.
+ * @return
+ * 		Value in celsius.
+ */
+float adc_calculate_sensor_pd(uint16_t value, float vref)
+{
+    float val = adc_calculate_vin(value, vref);
+
+    return val;
 }
 
 /**
@@ -235,7 +298,7 @@ float adc_conv_to_celsius(uint16_t value, int16_t vref) {
  * @return
  * 		Temperature value in celsius
  */
-float adc_get_tsense_temp(uint16_t value, int16_t vref) {
+float adc_get_tsense_temp(uint16_t value, float vref) {
     float temp_celsius = 0;
 
     if(value >= 0x800) {

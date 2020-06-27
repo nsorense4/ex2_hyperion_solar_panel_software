@@ -39,11 +39,7 @@
 
 #define AD7298_RES          4096
 
-// Temperature Sensor (LMT70) constants
-#define TEMP_VOLT_MAX       1375        //mV
-#define TEMP_VOLT_MIN       302         //mV
-#define TEMP_VAL_MAX        150         //celsius
-#define TEMP_VAL_MIN        -55         //celsius
+
 
 typedef struct adc_handler_t ADC_Handler;
 
@@ -69,13 +65,17 @@ void adc_set_control_reg(ADC_Handler *handl, uint8_t repeat,
 //return the raw value from the adc
 void adc_get_raw(ADC_Handler *handl, uint16_t *data, uint8_t *ch);
 
+//calculate the vin voltage value
+float adc_calculate_vin(uint16_t value, float vref);
 
-int16_t adc_conv_to_volt(uint16_t value, int16_t vref);
-float adc_conv_to_celsius(uint16_t value, int16_t vref);
-int16_t adc_conv_to_current(uint16_t value, int16_t vref);
+//sensor calculations
+float adc_calculate_sensor_temp(uint16_t value, float vref);
+float adc_calculate_sensor_voltage(uint16_t value, float vref);
+float adc_calculate_sensor_current(uint16_t value, float vref);
+float adc_calculate_sensor_pd(uint16_t value, float vref);
 
 // convert internal temp sensor value
-float adc_get_tsense_temp(uint16_t value, int16_t vref);
+float adc_get_tsense_temp(uint16_t value, float vref);
 
 // SPI Read/Write functions
 void write_spi(ADC_Handler *handl, uint16_t *data, uint32_t len);
