@@ -28,9 +28,13 @@
 
 // void panel_init(hyperion_panel *panel);
 
-void panel_update();
+// Updates all sensor readings (run this before panel_get_reading)
+void panel_update_all();
 
-float panel_get_reading(enum panel_t, enum channel_type_t);
+void panel_update_single(panel_t panel);
+
+// Get a specific panel's sensor reading
+float panel_get_reading(panel_t, channel_type_t);
 
 
 #endif

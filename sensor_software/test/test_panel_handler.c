@@ -20,6 +20,7 @@
 
 #include "unity.h"
 #include "panel_handler.h"
+#include "mock_adc_handler.h"
 
 void setUp(void)
 {
@@ -31,8 +32,6 @@ void tearDown(void)
 
 void test_CombinedMeasurements(void)
 {
-    
-
     TEST_IGNORE_MESSAGE("Need to Implement CombinedMeasurements");
 }
 

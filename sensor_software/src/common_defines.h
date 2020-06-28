@@ -55,7 +55,7 @@
 #define CURR_MIN                0           //A
 
 
-enum channel_type_t{
+typedef enum channel_type_t{
     CHANNEL_TEMP_1 = 0,
     CHANNEL_TEMP_2,
     CHANNEL_TEMP_3,
@@ -65,9 +65,9 @@ enum channel_type_t{
     CHANNEL_VOLT,
     CHANNEL_CURR,
     CHANNEL_NUM         // Number of ADC channels
-};
+}channel_type_t;
 
-enum panel_t{
+typedef enum panel_t{
     PANEL_P = 0,        
     PANEL_PD,
     PANEL_Z,
@@ -75,6 +75,6 @@ enum panel_t{
     PANEL_S,
     PANEL_N,
     PANEL_NUM           // Number of solar panels
-};
+}panel_t;
 
 #endif

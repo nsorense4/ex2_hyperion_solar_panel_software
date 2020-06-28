@@ -23,7 +23,7 @@
 
 ADC_Handler s_adc_handler;
 
-struct hyperion_panel_data{
+struct hyperion_all_panel_data{
     float temp_1[PANEL_NUM];
     float temp_2[PANEL_NUM];
     float temp_3[PANEL_NUM];
@@ -34,7 +34,7 @@ struct hyperion_panel_data{
     float curr[PANEL_NUM];
 };
 
-static struct hyperion_panel_data Panel_Data;
+static struct hyperion_all_panel_data All_Panels;
 
 static float get_temp(int channel);
 static float get_pd(int channel);
@@ -43,29 +43,46 @@ static float get_curr();
 
 /**
  * @brief
- * 		Updates all the values stored in hyperion_panel_data struct
+ * 		Updates all the values for all panels stored in hyperion_panel_data struct
  * @return
  * 		None
  */
-void panel_update()
+void panel_update_all()
 {
-    uint16_t buffer;
-    uint8_t  current_channel;
-
     //Update all panel data.
     for(int p = 0; p < PANEL_NUM; p++) {
         adc_init(&s_adc_handler, p);
 
-        Panel_Data.temp_1[p] = get_temp(ADC_CHANNEL_TEMP_1);
-        Panel_Data.temp_2[p] = get_temp(ADC_CHANNEL_TEMP_2);
-        Panel_Data.temp_3[p] = get_temp(ADC_CHANNEL_TEMP_3);
-        Panel_Data.pd_1[p]   = get_pd(ADC_CHANNEL_PD_1);
-        Panel_Data.pd_2[p]   = get_pd(ADC_CHANNEL_PD_2);
-        Panel_Data.pd_3[p]   = get_pd(ADC_CHANNEL_PD_3);
-        Panel_Data.volt[p]   = get_volt();
-        Panel_Data.curr[p]   = get_curr();
+        All_Panels.temp_1[p] = get_temp(ADC_CHANNEL_TEMP_1);
+        All_Panels.temp_2[p] = get_temp(ADC_CHANNEL_TEMP_2);
+        All_Panels.temp_3[p] = get_temp(ADC_CHANNEL_TEMP_3);
+        All_Panels.pd_1[p]   = get_pd(ADC_CHANNEL_PD_1);
+        All_Panels.pd_2[p]   = get_pd(ADC_CHANNEL_PD_2);
+        All_Panels.pd_3[p]   = get_pd(ADC_CHANNEL_PD_3);
+        All_Panels.volt[p]   = get_volt();
+        All_Panels.curr[p]   = get_curr();
     }
 }
+
+/**
+ * @brief
+ * 		Updates all the values for a single panel stored in hyperion_panel_data struct
+ * @return
+ * 		None
+ */
+void panel_update_single(panel_t panel)
+{
+    adc_init(&s_adc_handler, panel);
+
+    All_Panels.temp_1[panel] = get_temp(ADC_CHANNEL_TEMP_1);
+    All_Panels.temp_2[panel] = get_temp(ADC_CHANNEL_TEMP_2);
+    All_Panels.temp_3[panel] = get_temp(ADC_CHANNEL_TEMP_3);
+    All_Panels.pd_1[panel]   = get_pd(ADC_CHANNEL_PD_1);
+    All_Panels.pd_2[panel]   = get_pd(ADC_CHANNEL_PD_2);
+    All_Panels.pd_3[panel]   = get_pd(ADC_CHANNEL_PD_3);
+    All_Panels.volt[panel]   = get_volt();
+    All_Panels.curr[panel]   = get_curr();
+} 
 
 /**
  * @brief
@@ -88,42 +105,42 @@ void panel_update()
  * @return
  * 		Sensor reading
  */
-float panel_get_reading(enum panel_t panel, enum channel_type_t ch) 
+float panel_get_reading(panel_t panel, channel_type_t ch) 
 {
     float value = 0;
 
     switch (ch)
     {
         case CHANNEL_TEMP_1:
-            value = Panel_Data.temp_1[panel];
+            value = All_Panels.temp_1[panel];
             break;
 
         case CHANNEL_TEMP_2:
-            value = Panel_Data.temp_2[panel];
+            value = All_Panels.temp_2[panel];
             break;
 
         case CHANNEL_TEMP_3:
-            value = Panel_Data.temp_3[panel];
+            value = All_Panels.temp_3[panel];
             break;
 
         case CHANNEL_PD_1:
-            value = Panel_Data.pd_1[panel];
+            value = All_Panels.pd_1[panel];
             break;
 
         case CHANNEL_PD_2:
-            value = Panel_Data.pd_2[panel];
+            value = All_Panels.pd_2[panel];
             break;
 
         case CHANNEL_PD_3:
-            value = Panel_Data.pd_3[panel];
+            value = All_Panels.pd_3[panel];
             break;
 
         case CHANNEL_VOLT:
-            value = Panel_Data.volt[panel];
+            value = All_Panels.volt[panel];
             break;
 
         case CHANNEL_CURR:
-            value = Panel_Data.curr[panel];
+            value = All_Panels.curr[panel];
             break;
     
         default:
@@ -146,8 +163,10 @@ static float get_temp(int channel)
                         0,
                         0);
 
+    //call twice because first read is invalid
     adc_get_raw(&s_adc_handler, &buffer, &current_channel);
-    temp = adc_conv_to_celsius(buffer, 2500);
+    adc_get_raw(&s_adc_handler, &buffer, &current_channel);
+    temp = adc_calculate_sensor_temp(buffer, ADC_VREF);
 
     return temp;
 }
@@ -164,18 +183,50 @@ static float get_volt()
                         0,
                         0);
 
+    //call twice because first read is invalid
     adc_get_raw(&s_adc_handler, &buffer, &current_channel);
-    value = (float)adc_conv_to_volt(buffer, 2500);
+    adc_get_raw(&s_adc_handler, &buffer, &current_channel);
+    value = (float)adc_calculate_sensor_voltage(buffer, ADC_VREF);
 
     return value;
 }
 
 static float get_curr()
 {
+    float value = 0;
+    uint16_t buffer;
+    uint8_t  current_channel;
+    adc_set_control_reg(&s_adc_handler, 
+                        0, 
+                        ADC_CHANNEL_CURRENT,
+                        0,
+                        0,
+                        0);
 
+    //call twice because first read is invalid
+    adc_get_raw(&s_adc_handler, &buffer, &current_channel);
+    adc_get_raw(&s_adc_handler, &buffer, &current_channel);
+    value = (float)adc_calculate_sensor_current(buffer, ADC_VREF);
+
+    return value;
 }
 
 static float get_pd(int channel)
 {
+    float value = 0;
+    uint16_t buffer;
+    uint8_t  current_channel;
+    adc_set_control_reg(&s_adc_handler, 
+                        0, 
+                        channel,
+                        0,
+                        0,
+                        0);
 
+    //call twice because first read is invalid
+    adc_get_raw(&s_adc_handler, &buffer, &current_channel);
+    adc_get_raw(&s_adc_handler, &buffer, &current_channel);
+    value = (float)adc_calculate_sensor_pd(buffer, ADC_VREF);
+
+    return value;
 }
