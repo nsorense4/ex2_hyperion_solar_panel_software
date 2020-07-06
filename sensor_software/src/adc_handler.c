@@ -20,7 +20,9 @@
 #include "common_defines.h"
 #include "adc_handler.h"
 #include "demux_handler.h"
+#include "mock_spi.h"
 
+struct mock_buffer_t Mock_Buffer = {0,0};
 
 /**
  * @brief
@@ -39,6 +41,7 @@
  */
 void write_spi(ADC_Handler *handl, uint16_t *data, uint32_t len) 
 {
+    spiTransmitData_ExpectAnyArgsAndReturn(0xFF);
     //demux_select_pin();
     spiTransmitData(SPI_BASE_ADDR, &(handl->spi_dat_conf), len, data);
     //demux_reset();
@@ -61,6 +64,8 @@ void write_spi(ADC_Handler *handl, uint16_t *data, uint32_t len)
  */
 void read_spi(ADC_Handler *handl, uint16_t *data, uint32_t len) 
 {
+    spiReceiveData_ExpectAnyArgsAndReturn(0xFF);
+    spiReceiveData_ReturnArrayThruPtr_destbuff(&Mock_Buffer.value, Mock_Buffer.size);
     //demux_select_pin();
     spiReceiveData(SPI_BASE_ADDR, &(handl->spi_dat_conf), len, data);
     //demux_reset();

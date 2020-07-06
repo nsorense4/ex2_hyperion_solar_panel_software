@@ -77,4 +77,12 @@ typedef enum panel_t{
     PANEL_NUM           // Number of solar panels
 }panel_t;
 
+//Mock struct
+struct mock_buffer_t{
+    uint16_t value;
+    uint32_t size;
+};
+
+extern struct mock_buffer_t Mock_Buffer;
+
 #endif

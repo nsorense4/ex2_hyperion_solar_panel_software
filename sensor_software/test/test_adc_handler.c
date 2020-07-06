@@ -27,7 +27,6 @@ ADC_Handler handle;
 
 void setUp(void)
 {
-    
 }
 
 void tearDown(void)
@@ -38,12 +37,10 @@ void test_CalculateAdcVinVoltage(void)
 {
     adc_init(&handle, PANEL_P);
 
-    spiTransmitData_ExpectAnyArgsAndReturn(0xFF);
     adc_set_control_reg(&handle, 0, ADC_CHANNEL_VOLT, 0, 0, 0);
-
-    uint16_t mock_rx_buffer = 0x0FFF;
-    spiReceiveData_ExpectAnyArgsAndReturn(0xFF);
-    spiReceiveData_ReturnArrayThruPtr_destbuff(&mock_rx_buffer, 1);
+    
+    Mock_Buffer.value = 0x0FFF;
+    Mock_Buffer.size  = 1;
     uint16_t buffer;
     uint8_t  current_channel;
     adc_get_raw(&handle, &buffer, &current_channel);
@@ -56,13 +53,11 @@ void test_CalculateAdcVinVoltage(void)
 
 void test_CalculateSensorVoltage(void) {
     adc_init(&handle, PANEL_P);
-
-    spiTransmitData_ExpectAnyArgsAndReturn(0xFF);
+    
     adc_set_control_reg(&handle, 0, ADC_CHANNEL_VOLT, 0, 0, 0);
 
-    uint16_t mock_rx_buffer = 0x0FFF;
-    spiReceiveData_ExpectAnyArgsAndReturn(0xFF);
-    spiReceiveData_ReturnArrayThruPtr_destbuff(&mock_rx_buffer, 1);
+    Mock_Buffer.value = 0x0FFF;
+    Mock_Buffer.size  = 1;
     uint16_t buffer;
     uint8_t  current_channel;
     adc_get_raw(&handle, &buffer, &current_channel);
@@ -78,12 +73,10 @@ void test_CalculateSensorTemperature(void)
 {
     adc_init(&handle, PANEL_P);
 
-    spiTransmitData_ExpectAnyArgsAndReturn(0xFF);
     adc_set_control_reg(&handle, 0, ADC_CHANNEL_TEMP_1, 0, 0, 0);
-
-    uint16_t mock_rx_buffer = 0x08CD;
-    spiReceiveData_ExpectAnyArgsAndReturn(0xFF);
-    spiReceiveData_ReturnArrayThruPtr_destbuff(&mock_rx_buffer, 1);
+    
+    Mock_Buffer.value = 0x08CD;
+    Mock_Buffer.size  = 1;
     uint16_t buffer;
     uint8_t  current_channel;
     adc_get_raw(&handle, &buffer, &current_channel);
@@ -98,12 +91,10 @@ void test_CalculateSensorCurrent(void)
 {
     adc_init(&handle, PANEL_P);
 
-    spiTransmitData_ExpectAnyArgsAndReturn(0xFF);
     adc_set_control_reg(&handle, 0, ADC_CHANNEL_VOLT, 0, 0, 0);
 
-    uint16_t mock_rx_buffer = 0x0FFF;
-    spiReceiveData_ExpectAnyArgsAndReturn(0xFF);
-    spiReceiveData_ReturnArrayThruPtr_destbuff(&mock_rx_buffer, 1);
+    Mock_Buffer.value = 0x0FFF;
+    Mock_Buffer.size  = 1;
     uint16_t buffer;
     uint8_t  current_channel;
     adc_get_raw(&handle, &buffer, &current_channel);
