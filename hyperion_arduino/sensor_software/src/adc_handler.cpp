@@ -35,13 +35,13 @@
  * @return
  * 		None
  */
-void write_spi(ADC_Handler *handl, uint16_t *data, uint32_t len) 
-{
-    spiTransmitData_ExpectAnyArgsAndReturn(0xFF);
-    //demux_select_pin();
-    spiTransmitData(SPI_BASE_ADDR, &(handl->spi_dat_conf), len, data);
-    //demux_reset();
-}
+// void write_spi(ADC_Handler *handl, uint16_t *data, uint32_t len) 
+// {
+//     spiTransmitData_ExpectAnyArgsAndReturn(0xFF);
+//     //demux_select_pin();
+//     spiTransmitData(SPI_BASE_ADDR, &(handl->spi_dat_conf), len, data);
+//     //demux_reset();
+// }
 
 /**
  * @brief
@@ -58,14 +58,14 @@ void write_spi(ADC_Handler *handl, uint16_t *data, uint32_t len)
  * @return
  * 		None
  */
-void read_spi(ADC_Handler *handl, uint16_t *data, uint32_t len) 
-{
-    spiReceiveData_ExpectAnyArgsAndReturn(0xFF);
-    spiReceiveData_ReturnArrayThruPtr_destbuff(&Mock_Buffer.value, Mock_Buffer.size);
-    //demux_select_pin();
-    spiReceiveData(SPI_BASE_ADDR, &(handl->spi_dat_conf), len, data);
-    //demux_reset();
-}
+// void read_spi(ADC_Handler *handl, uint16_t *data, uint32_t len) 
+// {
+//     spiReceiveData_ExpectAnyArgsAndReturn(0xFF);
+//     spiReceiveData_ReturnArrayThruPtr_destbuff(&Mock_Buffer.value, Mock_Buffer.size);
+//     //demux_select_pin();
+//     spiReceiveData(SPI_BASE_ADDR, &(handl->spi_dat_conf), len, data);
+//     //demux_reset();
+// }
 
 /**
  * @brief
@@ -76,11 +76,14 @@ void read_spi(ADC_Handler *handl, uint16_t *data, uint32_t len)
  * 		1 == success
  */
 unsigned char ADC_Handler::adc_init(void) {
-    digitalWrite(AD7298_PD_RESET_PIN, HIGH);
-    pinMode(AD7298_PD_RESET_PIN, OUTPUT);
-    pinMode(AD7298_TSENSE_BUSY_PIN, INPUT);
+    //digitalWrite(AD7298_PD_RESET_PIN, HIGH);
+    // pinMode(AD7298_PD_RESET_PIN, OUTPUT);
+    // pinMode(AD7298_TSENSE_BUSY_PIN, INPUT);
+    pinMode(AD7298_CS_PIN, OUTPUT);
 
     SPI.begin();
+    
+    digitalWrite(AD7298_CS_PIN, HIGH);
 
     return 1;
 }
@@ -157,19 +160,21 @@ void ADC_Handler::adc_set_control_reg(unsigned char repeat,
  * @return
  * 		None
  */
-void ADC_Handler::adc_get_raw(uint16_t *data, uint8_t *ch) 
+void ADC_Handler::adc_get_raw(unsigned short *data, unsigned char *ch) 
 {  
     //unsigned char buffer[2] = {0,0};
-    unsigned int buffer = 0;
-    unsigned int value  = 0;
+    unsigned short buffer_H = 0;
+    unsigned short buffer_L = 0;
+
+    unsigned short value = 0;
 
     //SPI read into value
     digitalWrite(AD7298_CS_PIN, LOW);
 
-    value = SPI.transfer(0);
-    value = value << 8;
-    buffer =  SPI.transfer(0);
-    value = value | buffer;
+    buffer_H = SPI.transfer(0);
+    buffer_H = buffer_H << 8;
+    buffer_L =  SPI.transfer(0);
+    value = buffer_H | buffer_L;
 
     digitalWrite(AD7298_CS_PIN, HIGH);
     
@@ -191,7 +196,7 @@ void ADC_Handler::adc_get_raw(uint16_t *data, uint8_t *ch)
  * @return
  * 		Value in mV.
  */
-float ADC_Handler::adc_calculate_vin(uint16_t value, float vref) {
+float ADC_Handler::adc_calculate_vin(unsigned short value, float vref) {
     float volts = 0;
 
     // from AD7298 datasheet
@@ -212,7 +217,7 @@ float ADC_Handler::adc_calculate_vin(uint16_t value, float vref) {
  * @return
  * 		Value in celsius.
  */
-float ADC_Handler::adc_calculate_sensor_temp(uint16_t value, float vref) {
+float ADC_Handler::adc_calculate_sensor_temp(unsigned short value, float vref) {
     float temp_voltage = adc_calculate_vin(value, vref);
 
     float celsius = 0;
@@ -237,7 +242,7 @@ float ADC_Handler::adc_calculate_sensor_temp(uint16_t value, float vref) {
  * @return
  * 		Value in mV.
  */
-float ADC_Handler::adc_calculate_sensor_voltage(uint16_t value, float vref) {
+float ADC_Handler::adc_calculate_sensor_voltage(unsigned short value, float vref) {
     float val = adc_calculate_vin(value, vref);
 
     val = val * ((VOLT_MAX - VOLT_MIN) / (ADC_VOLT_MAX - ADC_VOLT_MIN)); 
@@ -257,7 +262,7 @@ float ADC_Handler::adc_calculate_sensor_voltage(uint16_t value, float vref) {
  * @return
  * 		Value in mA.
  */
-float ADC_Handler::adc_calculate_sensor_current(uint16_t value, float vref)
+float ADC_Handler::adc_calculate_sensor_current(unsigned short value, float vref)
 {
     float val = adc_calculate_vin(value, vref);
 
@@ -278,7 +283,7 @@ float ADC_Handler::adc_calculate_sensor_current(uint16_t value, float vref)
  * @return
  * 		Value in celsius.
  */
-float ADC_Handler::adc_calculate_sensor_pd(uint16_t value, float vref)
+float ADC_Handler::adc_calculate_sensor_pd(unsigned short value, float vref)
 {
     float val = adc_calculate_vin(value, vref);
 
@@ -306,7 +311,7 @@ float ADC_Handler::adc_calculate_sensor_pd(uint16_t value, float vref)
  * @return
  * 		Temperature value in celsius
  */
-float ADC_Handler::adc_get_tsense_temp(uint16_t value, float vref) {
+float ADC_Handler::adc_get_tsense_temp(unsigned short value, float vref) {
     float temp_celsius = 0;
 
     if(value >= 0x800) {

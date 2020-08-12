@@ -66,23 +66,23 @@ class ADC_Handler{
                                  unsigned char tsense_avg);
 
         //return the raw value from the adc
-        void adc_get_raw(uint16_t *data, uint8_t *ch);
+        void adc_get_raw(unsigned short *data, unsigned char *ch);
 
         //calculate the vin voltage value
-        float adc_calculate_vin(uint16_t value, float vref);
+        float adc_calculate_vin(unsigned short value, float vref);
 
         //sensor calculations
-        float adc_calculate_sensor_temp(uint16_t value, float vref);
-        float adc_calculate_sensor_voltage(uint16_t value, float vref);
-        float adc_calculate_sensor_current(uint16_t value, float vref);
-        float adc_calculate_sensor_pd(uint16_t value, float vref);
+        float adc_calculate_sensor_temp(unsigned short value, float vref);
+        float adc_calculate_sensor_voltage(unsigned short value, float vref);
+        float adc_calculate_sensor_current(unsigned short value, float vref);
+        float adc_calculate_sensor_pd(unsigned short value, float vref);
 
         // convert internal temp sensor value
-        float adc_get_tsense_temp(uint16_t value, float vref);
+        float adc_get_tsense_temp(unsigned short value, float vref);
 
         // SPI Read/Write functions
-        void write_spi(ADC_Handler *handl, uint16_t *data, uint32_t len);
-        void read_spi(ADC_Handler *handl, uint16_t *data, uint32_t len);
+        //void write_spi(ADC_Handler *handl, unsigned short *data, uint32_t len);
+        //void read_spi(ADC_Handler *handl, unsigned short *data, uint32_t len);
 
 };
 
