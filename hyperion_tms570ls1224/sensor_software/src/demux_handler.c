@@ -21,56 +21,80 @@
 #include "gio.h"
 #include "demux_handler.h"
 
+void demux_enable(gioPORT_t *port)
+{
+    gioSetBit(port, DEMUX_E1_PIN, LOW);
+    gioSetBit(port, DEMUX_E2_PIN, LOW);
+    gioSetBit(port, DEMUX_E3_PIN, HIGH);
+}
+
 /**
  * @brief
- *      Allows user to select specific Hyperion panel ADC using the 74AHC138 demux
- * @param panel
- *      variable panel of data type panel_CS which represents the different hyperion panels ex: cs_P, cs_PD etc
+ *      Selects the given output pin.
+ * @param port
+ *      GIO port register
+ * @param pin
+ *      Select which output pin to use. (OUT_Y0...OUT_Y7)
  */
-void set_pin(enum panel_CS panel)
+void demux_select_pin(gioPORT_t *port, enum demux_out_pins pin)
 {
-    gioInit(); //initialising gio ports
-    switch(panel)
+    //gioInit(); //initialising gio ports
+    switch(pin)
     {
-    case cs_P:
-        //enable y2(010)
-        //set a0 low
-        gioSetBit(gioPORTB,7,1); // set a1 high
-        gioSetBit(gioPORTA,3,0); // set a2 low
-        break;
-    case cs_PD:
-        //enable y3(011)
-        //set a0 high
-        gioSetBit(gioPORTB,7,1); // set a1 high
-        gioSetBit(gioPORTA,3,0); // set a2 low
-        break;
-    case cs_Z:
-        //enable y4(100)
-        //set a0 low
-        gioSetBit(gioPORTB,7,0); // set a1 low
-        gioSetBit(gioPORTA,3,1); // set a2 high
-        break;
-    case cs_SD:
-        //enAble y5(101)
-        //set a0 high
-        gioSetBit(gioPORTB,7,0); // set a1 low
-        gioSetBit(gioPORTA,3,1); // set a2 high
-        break;
-    case cs_S:
-        //enable y6(110)
-        //set a0 low
-        gioSetBit(gioPORTB,7,1); // set a1 high
-        gioSetBit(gioPORTA,3,1); // set a2 high
-        break;
-    case cs_N:
-        //enable y7(111)
-        //set a0 high
-        gioSetBit(gioPORTB,7,1); // set a1 high
-        gioSetBit(gioPORTA,3,1); // set a2 high
-        break;
-    default:
-        //enable all pins
-        break;
+        case OUT_Y0:
+            gioSetBit(port, DEMUX_A0_PIN, LOW);
+            gioSetBit(port, DEMUX_A1_PIN, LOW);
+            gioSetBit(port, DEMUX_A2_PIN, LOW);
+            break;
+
+        case OUT_Y1:
+            gioSetBit(port, DEMUX_A0_PIN, HIGH);
+            gioSetBit(port, DEMUX_A1_PIN, LOW);
+            gioSetBit(port, DEMUX_A2_PIN, LOW);
+            break;
+
+        case OUT_Y2:
+            gioSetBit(port, DEMUX_A0_PIN, LOW);
+            gioSetBit(port, DEMUX_A1_PIN, HIGH);
+            gioSetBit(port, DEMUX_A2_PIN, LOW);
+            break;
+
+        case OUT_Y3:
+            gioSetBit(port, DEMUX_A0_PIN, HIGH);
+            gioSetBit(port, DEMUX_A1_PIN, HIGH);
+            gioSetBit(port, DEMUX_A2_PIN, LOW);
+            break;
+
+        case OUT_Y4:
+            gioSetBit(port, DEMUX_A0_PIN, LOW);
+            gioSetBit(port, DEMUX_A1_PIN, LOW);
+            gioSetBit(port, DEMUX_A2_PIN, HIGH);
+            break;
+
+        case OUT_Y5:
+            gioSetBit(port, DEMUX_A0_PIN, HIGH);
+            gioSetBit(port, DEMUX_A1_PIN, LOW);
+            gioSetBit(port, DEMUX_A2_PIN, HIGH);
+            break;
+
+        case OUT_Y6:
+            gioSetBit(port, DEMUX_A0_PIN, LOW);
+            gioSetBit(port, DEMUX_A1_PIN, HIGH);
+            gioSetBit(port, DEMUX_A2_PIN, HIGH);
+            break;
+
+        case OUT_Y7:
+            gioSetBit(port, DEMUX_A0_PIN, HIGH);
+            gioSetBit(port, DEMUX_A1_PIN, HIGH);
+            gioSetBit(port, DEMUX_A2_PIN, HIGH);
+            break;
+
+        default:
+            //OUT_Y0 default 
+            gioSetBit(port, DEMUX_A0_PIN, LOW);
+            gioSetBit(port, DEMUX_A1_PIN, LOW);
+            gioSetBit(port, DEMUX_A2_PIN, LOW);
+            break;
     }
 }
 
