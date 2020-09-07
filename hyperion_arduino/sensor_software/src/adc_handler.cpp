@@ -76,14 +76,7 @@
  * 		1 == success
  */
 unsigned char ADC_Handler::adc_init(void) {
-    //digitalWrite(AD7298_PD_RESET_PIN, HIGH);
-    // pinMode(AD7298_PD_RESET_PIN, OUTPUT);
-    // pinMode(AD7298_TSENSE_BUSY_PIN, INPUT);
-    pinMode(AD7298_CS_PIN, OUTPUT);
-
-    SPI.begin();
-    
-    digitalWrite(AD7298_CS_PIN, HIGH);
+    Wire.begin();
 
     return 1;
 }
@@ -135,11 +128,11 @@ void ADC_Handler::adc_set_control_reg(unsigned char repeat,
 
     buffer[0] = (control_reg_value & 0xFF00) >> 8;
     buffer[1] = (control_reg_value & 0x00FF);
-
-    //send buffer to SPI
-    digitalWrite(AD7298_CS_PIN, LOW);
-    SPI.transfer(buffer, 2);
-    digitalWrite(AD7298_CS_PIN, HIGH);   
+  
+    //i2c data send
+    Wire.beginTransmission(ADC_SLAVE_ADDR);
+    Wire.write(buffer, 2);
+    Wire.endTransmission();
 
     this->control_reg_val = control_reg_value;
 }
@@ -168,15 +161,12 @@ void ADC_Handler::adc_get_raw(unsigned short *data, unsigned char *ch)
 
     unsigned short value = 0;
 
-    //SPI read into value
-    digitalWrite(AD7298_CS_PIN, LOW);
-
-    buffer_H = SPI.transfer(0);
+    //i2c slave read
+    Wire.requestFrom(ADC_SLAVE_ADDR, 2);
+    buffer_H = Wire.read();
     buffer_H = buffer_H << 8;
-    buffer_L =  SPI.transfer(0);
+    buffer_L =  Wire.read();
     value = buffer_H | buffer_L;
-
-    digitalWrite(AD7298_CS_PIN, HIGH);
     
     *data = value & 0x0FFF;
     

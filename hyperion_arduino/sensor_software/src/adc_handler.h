@@ -23,8 +23,8 @@
 
 #include "common_defines.h"
 
-// Arduino SPI library
-#include <SPI.h>
+// Arduino library
+#include <Wire.h>
 
 // AD7298 Control Register Map
 #define AD7298_WRITE        (1U << 15U)
@@ -57,7 +57,7 @@ class ADC_Handler{
         unsigned short control_reg_val;
 
     public:
-        // Initialize ADC defaults and SPI
+        // Initialize ADC defaults
         unsigned char adc_init(void);
         void adc_set_control_reg(unsigned char repeat,
                                  unsigned short channel,

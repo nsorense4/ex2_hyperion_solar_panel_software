@@ -21,11 +21,9 @@
 #define COMMON_DEFINES_H
 
 
-// SPI defines
 // TODO: configure these
-#define AD7298_CS_PIN           0
-#define AD7298_PD_RESET_PIN     1
-#define AD7298_TSENSE_BUSY_PIN  2
+//i2c defines
+#define ADC_SLAVE_ADDR          0
 
 #define HIGH                    1
 #define LOW                     0
