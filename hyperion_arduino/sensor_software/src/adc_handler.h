@@ -22,9 +22,9 @@
 #define ADC_HANDLER_H
 
 #include "common_defines.h"
+#include <stdint.h>
+#include "HL_i2c.h"
 
-// Arduino library
-#include <Wire.h>
 
 // AD7298 Control Register Map
 #define AD7298_WRITE        (1U << 15U)
@@ -55,7 +55,12 @@
 class ADC_Handler{
     private:
         unsigned short control_reg_val;
-
+        void adc_begin_transmission(uint16_t slave_addr);
+        void adc_write(uint8_t *buf, int size);
+        void adc_end_transmission();
+        void adc_request_from(uint16_t slave_addr);
+        void adc_read(uint8_t *data, uint32_t length);
+        void adc_end_request();
     public:
         // Initialize ADC defaults
         unsigned char adc_init(void);
@@ -79,10 +84,6 @@ class ADC_Handler{
 
         // convert internal temp sensor value
         float adc_get_tsense_temp(unsigned short value, float vref);
-
-        // SPI Read/Write functions
-        //void write_spi(ADC_Handler *handl, unsigned short *data, uint32_t len);
-        //void read_spi(ADC_Handler *handl, unsigned short *data, uint32_t len);
 
 };
 

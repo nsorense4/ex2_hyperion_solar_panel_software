@@ -19,54 +19,6 @@
 
 #include "adc_handler.h"
 
-
-/**
- * @brief
- * 		Send value over SPI
- * @details
- * 		This function uses Halcogen generated SPI drivers to send data over SPI.
- *      The CS lines are set accordingly using demux_handler functions.
- * @param handl
- * 		Pointer to an ADC_Handler struct
- * @param data
- * 		Pointer to data buffer
- * @param len
- * 		Size of data buffer
- * @return
- * 		None
- */
-// void write_spi(ADC_Handler *handl, uint16_t *data, uint32_t len) 
-// {
-//     spiTransmitData_ExpectAnyArgsAndReturn(0xFF);
-//     //demux_select_pin();
-//     spiTransmitData(SPI_BASE_ADDR, &(handl->spi_dat_conf), len, data);
-//     //demux_reset();
-// }
-
-/**
- * @brief
- * 		Receive value over SPI
- * @details
- * 		This function uses Halcogen generated SPI drivers to receive data over SPI.
- *      The CS lines are set accordingly using demux_handler functions.
- * @param handl
- * 		Pointer to an ADC_Handler struct
- * @param data
- * 		Pointer to data buffer
- * @param len
- * 		Size of data buffer
- * @return
- * 		None
- */
-// void read_spi(ADC_Handler *handl, uint16_t *data, uint32_t len) 
-// {
-//     spiReceiveData_ExpectAnyArgsAndReturn(0xFF);
-//     spiReceiveData_ReturnArrayThruPtr_destbuff(&Mock_Buffer.value, Mock_Buffer.size);
-//     //demux_select_pin();
-//     spiReceiveData(SPI_BASE_ADDR, &(handl->spi_dat_conf), len, data);
-//     //demux_reset();
-// }
-
 /**
  * @brief
  * 		Initialize ADC_Handler
@@ -76,9 +28,48 @@
  * 		1 == success
  */
 unsigned char ADC_Handler::adc_init(void) {
-    Wire.begin();
 
     return 1;
+}
+
+
+void ADC_Handler::adc_begin_transmission (uint16_t slave_addr) {
+    i2cSetSlaveAdd(ADC_i2c_PORT, slave_addr);
+
+    i2cSetStop(ADC_i2c_PORT);
+    /* Transmit Start Condition */
+    i2cSetStart(ADC_i2c_PORT);
+}
+
+void ADC_Handler::adc_write(uint8_t *buf, int size) {
+    i2cSend(ADC_i2c_PORT, size, buf);
+
+    /* Wait until Bus Busy is cleared */
+    while(i2cIsBusBusy(ADC_i2c_PORT) == true);
+
+    /* Wait until Stop is detected */
+    while(i2cIsStopDetected(ADC_i2c_PORT) == 0);
+}
+
+void ADC_Handler::adc_end_transmission () {
+    /* Clear the Stop condition */
+    i2cClearSCD(ADC_i2c_PORT);
+}
+
+void ADC_Handler::adc_request_from(uint16_t slave_addr) {
+    i2cSetSlaveAdd(ADC_i2c_PORT, slave_addr);
+
+    /* Transmit Start Condition */
+    i2cSetStart(ADC_i2c_PORT);
+}
+
+void ADC_Handler::adc_read(uint8_t *data, uint32_t length) {
+    i2cReceive(ADC_i2c_PORT,length,data);
+}
+
+void ADC_Handler::adc_end_request() {
+    /* Set Stop after programmed Count */
+    i2cSetStop(ADC_i2c_PORT);
 }
 
 /**
@@ -130,9 +121,9 @@ void ADC_Handler::adc_set_control_reg(unsigned char repeat,
     buffer[1] = (control_reg_value & 0x00FF);
   
     //i2c data send
-    Wire.beginTransmission(ADC_SLAVE_ADDR);
-    Wire.write(buffer, 2);
-    Wire.endTransmission();
+    adc_begin_transmission(ADC_SLAVE_ADDR);
+    adc_write(buffer, 2);
+    adc_end_transmission();
 
     this->control_reg_val = control_reg_value;
 }
@@ -155,18 +146,18 @@ void ADC_Handler::adc_set_control_reg(unsigned char repeat,
  */
 void ADC_Handler::adc_get_raw(unsigned short *data, unsigned char *ch) 
 {  
-    //unsigned char buffer[2] = {0,0};
-    unsigned short buffer_H = 0;
-    unsigned short buffer_L = 0;
+    unsigned char buffer[2] = {0,0};
+    //unsigned short buffer_H = 0;
+    //unsigned short buffer_L = 0;
 
     unsigned short value = 0;
 
     //i2c slave read
-    Wire.requestFrom(ADC_SLAVE_ADDR, 2);
-    buffer_H = Wire.read();
-    buffer_H = buffer_H << 8;
-    buffer_L =  Wire.read();
-    value = buffer_H | buffer_L;
+    adc_request_from(ADC_SLAVE_ADDR);
+    adc_read(buffer, 2);
+    adc_end_request();
+
+    value = (buffer[1] << 8) | buffer[0];
     
     *data = value & 0x0FFF;
     

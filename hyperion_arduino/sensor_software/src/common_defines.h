@@ -20,10 +20,9 @@
 #ifndef COMMON_DEFINES_H
 #define COMMON_DEFINES_H
 
-
-// TODO: configure these
 //i2c defines
-#define ADC_SLAVE_ADDR          0
+#define ADC_SLAVE_ADDR          0x20
+#define ADC_i2c_PORT            i2cREG1
 
 #define HIGH                    1
 #define LOW                     0
