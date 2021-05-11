@@ -13,7 +13,7 @@
  */
 /**
  * @file    adc_handler.h
- * @author  Vasu Gupta
+ * @author  Vasu Gupta, Robert Taylor
  * @date    2020-06-15
  */
 
@@ -27,13 +27,13 @@
 
 
 // AD7298 Control Register Map
-#define AD7298_WRITE        (1U << 15U)
-#define AD7298_REPEAT       (1U << 14U)
-#define AD7298_CH(x)        (1U << ((13U) - x))
-#define AD7298_TSENSE       (1U << 5U)
-#define AD7298_EXT_REF      (1U << 2U)
-#define AD7298_TSENSE_AVG   (1U << 1U)
-#define AD7298_PPD          (1U << 0U)
+#define AD7298_REPEAT       (1U << 0U)
+#define AD7298_TSENSE       (1U << 7U)
+#define AD7298_EXT_REF      (1U << 4U)
+#define AD7298_NOISE_DELAY  (1U << 5U)
+#define AD7298_PPD          (1U << 3U)
+#define AD7298_CLEAR_ALERT  (1U << 2U)
+#define AD7298_RESET        (1U << 1U)
 
 #define AD7298_RES          4096
 
@@ -52,39 +52,32 @@
 // };
 
 
-class ADC_Handler{
-    private:
-        unsigned short control_reg_val;
-        void adc_begin_transmission(uint16_t slave_addr);
-        void adc_write(uint8_t *buf, int size);
-        void adc_end_transmission();
-        void adc_request_from(uint16_t slave_addr);
-        void adc_read(uint8_t *data, uint32_t length);
-        void adc_end_request();
-    public:
-        // Initialize ADC defaults
-        unsigned char adc_init(void);
-        void adc_set_control_reg(unsigned char repeat,
-                                 unsigned short channel,
-                                 unsigned char ext_ref,
-                                 unsigned char tsense,
-                                 unsigned char tsense_avg);
+unsigned short control_reg_val;
 
-        //return the raw value from the adc
-        void adc_get_raw(unsigned short *data, unsigned char *ch);
+// Initialize ADC defaults
+unsigned char adc_init(void);
+void adc_set_command_reg(uint8_t channel,
+                                 uint8_t ext_ref,
+                                 uint8_t tsense,
+                                 uint8_t noise_delay,
+                                 uint8_t reset,
+                                 uint8_t autocycle);
 
-        //calculate the vin voltage value
-        float adc_calculate_vin(unsigned short value, float vref);
+void adc_set_register_pointer(uint8_t reg_sel);
 
-        //sensor calculations
-        float adc_calculate_sensor_temp(unsigned short value, float vref);
-        float adc_calculate_sensor_voltage(unsigned short value, float vref);
-        float adc_calculate_sensor_current(unsigned short value, float vref);
-        float adc_calculate_sensor_pd(unsigned short value, float vref);
+//return the raw value from the adc
+void adc_get_raw(unsigned short *data, unsigned char *ch);
 
-        // convert internal temp sensor value
-        float adc_get_tsense_temp(unsigned short value, float vref);
+//calculate the vin voltage value
+float adc_calculate_vin(unsigned short value, float vref);
 
-};
+//sensor calculations
+float adc_calculate_sensor_temp(unsigned short value, float vref);
+float adc_calculate_sensor_voltage(unsigned short value, float vref);
+float adc_calculate_sensor_current(unsigned short value, float vref);
+float adc_calculate_sensor_pd(unsigned short value, float vref);
+
+// convert internal temp sensor value
+float adc_get_tsense_temp(unsigned short value, float vref);
 
 #endif

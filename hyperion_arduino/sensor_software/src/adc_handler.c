@@ -18,6 +18,8 @@
  */
 
 #include "adc_handler.h"
+#include <stdint.h>
+#include "printf.h"
 
 /**
  * @brief
@@ -27,49 +29,73 @@
  * @return
  * 		1 == success
  */
-unsigned char ADC_Handler::adc_init(void) {
+unsigned char adc_init(void) {
+    int delay;
+    adc_set_command_reg(1<<7,0,0,1,0,1);
+    for(delay=0;delay<10000000;delay++);
+    uint8_t reg_sel = 1;
+    adc_set_register_pointer(reg_sel);
+    for(delay=0;delay<1000000;delay++);
+
+    unsigned short data = 0;
+    unsigned char ch = 0;
+    adc_get_raw(&data, &ch);
+    printf("Data: %x, ch: %x\r\n", ch, data);
 
     return 1;
 }
 
-
-void ADC_Handler::adc_begin_transmission (uint16_t slave_addr) {
+void adc_write(uint8_t *buf, int size, uint8_t slave_addr) {
     i2cSetSlaveAdd(ADC_i2c_PORT, slave_addr);
+    i2cSetDirection(i2cREG1, I2C_TRANSMITTER);
+    i2cSetCount(ADC_i2c_PORT, size);
+    /* Set mode as Master */
+    i2cSetMode(i2cREG1, I2C_MASTER);
+
 
     i2cSetStop(ADC_i2c_PORT);
     /* Transmit Start Condition */
     i2cSetStart(ADC_i2c_PORT);
-}
-
-void ADC_Handler::adc_write(uint8_t *buf, int size) {
     i2cSend(ADC_i2c_PORT, size, buf);
 
     /* Wait until Bus Busy is cleared */
     while(i2cIsBusBusy(ADC_i2c_PORT) == true);
 
     /* Wait until Stop is detected */
-    while(i2cIsStopDetected(ADC_i2c_PORT) == 0);
-}
-
-void ADC_Handler::adc_end_transmission () {
+    //while(i2cIsStopDetected(ADC_i2c_PORT) == 0);
     /* Clear the Stop condition */
     i2cClearSCD(ADC_i2c_PORT);
 }
 
-void ADC_Handler::adc_request_from(uint16_t slave_addr) {
-    i2cSetSlaveAdd(ADC_i2c_PORT, slave_addr);
+void adc_request_from(uint16_t slave_addr) {
 
+}
+
+void adc_read(uint8_t *data, uint32_t length, uint8_t slave_addr) {
+    i2cSetSlaveAdd(ADC_i2c_PORT, slave_addr);
+    i2cSetDirection(i2cREG1, I2C_RECEIVER);
+    i2cSetCount(i2cREG1, length);
+    i2cSetMode(i2cREG1, I2C_MASTER);
+    /* Set Stop after programmed Count */
+    i2cSetStop(i2cREG1);
     /* Transmit Start Condition */
     i2cSetStart(ADC_i2c_PORT);
-}
 
-void ADC_Handler::adc_read(uint8_t *data, uint32_t length) {
     i2cReceive(ADC_i2c_PORT,length,data);
+
+    /* Wait until Bus Busy is cleared */
+    while(i2cIsBusBusy(i2cREG1) == true);
+
+    /* Wait until Stop is detected */
+    //while(i2cIsStopDetected(i2cREG1) == 0);
+
+    /* Clear the Stop condition */
+    i2cClearSCD(i2cREG1);
+
 }
 
-void ADC_Handler::adc_end_request() {
-    /* Set Stop after programmed Count */
-    i2cSetStop(ADC_i2c_PORT);
+void adc_end_request() {
+
 }
 
 /**
@@ -100,32 +126,35 @@ void ADC_Handler::adc_end_request() {
  * @return
  * 		None
  */
-void ADC_Handler::adc_set_control_reg(unsigned char repeat,
-                                 unsigned short channel,
-                                 unsigned char ext_ref,
-                                 unsigned char tsense,
-                                 unsigned char tsense_avg) 
+void adc_set_command_reg(uint8_t channel,
+                                 uint8_t ext_ref,
+                                 uint8_t tsense,
+                                 uint8_t noise_delay,
+                                 uint8_t reset,
+                                 uint8_t autocycle)
 {
-    unsigned char buffer[2] = {0,0};
+    uint8_t buffer[3] = {0,0,0};
 
-    unsigned short control_reg_value = 0;
+    uint8_t control_reg_value = 0;
+    buffer[1] = channel;
 
-    control_reg_value = AD7298_WRITE 
-                      | (repeat     * AD7298_REPEAT) 
-                      |  AD7298_CH(channel)
-                      | (ext_ref    * AD7298_EXT_REF)
-                      | (tsense     * AD7298_TSENSE)
-                      | (tsense_avg * AD7298_TSENSE_AVG);
+    control_reg_value = (ext_ref * AD7298_EXT_REF) |
+                        (tsense * AD7298_TSENSE)   |
+                        (reset * AD7298_RESET)     |
+                        (noise_delay * AD7298_NOISE_DELAY) |
+                        (autocycle * AD7298_REPEAT);
 
-    buffer[0] = (control_reg_value & 0xFF00) >> 8;
-    buffer[1] = (control_reg_value & 0x00FF);
+    buffer[2] = control_reg_value;
   
     //i2c data send
-    adc_begin_transmission(ADC_SLAVE_ADDR);
-    adc_write(buffer, 2);
-    adc_end_transmission();
+    adc_write(buffer, 3, ADC_SLAVE_ADDR);
 
-    this->control_reg_val = control_reg_value;
+
+    control_reg_val = control_reg_value;
+}
+
+void adc_set_register_pointer(uint8_t reg_sel) {
+    adc_write(&reg_sel, 1, ADC_SLAVE_ADDR);
 }
 
 /**
@@ -144,7 +173,7 @@ void ADC_Handler::adc_set_control_reg(unsigned char repeat,
  * @return
  * 		None
  */
-void ADC_Handler::adc_get_raw(unsigned short *data, unsigned char *ch) 
+void adc_get_raw(unsigned short *data, unsigned char *ch)
 {  
     unsigned char buffer[2] = {0,0};
     //unsigned short buffer_H = 0;
@@ -153,9 +182,7 @@ void ADC_Handler::adc_get_raw(unsigned short *data, unsigned char *ch)
     unsigned short value = 0;
 
     //i2c slave read
-    adc_request_from(ADC_SLAVE_ADDR);
-    adc_read(buffer, 2);
-    adc_end_request();
+    adc_read(buffer, 2, ADC_SLAVE_ADDR);
 
     value = (buffer[1] << 8) | buffer[0];
     
@@ -177,7 +204,7 @@ void ADC_Handler::adc_get_raw(unsigned short *data, unsigned char *ch)
  * @return
  * 		Value in mV.
  */
-float ADC_Handler::adc_calculate_vin(unsigned short value, float vref) {
+float adc_calculate_vin(unsigned short value, float vref) {
     float volts = 0;
 
     // from AD7298 datasheet
@@ -198,7 +225,7 @@ float ADC_Handler::adc_calculate_vin(unsigned short value, float vref) {
  * @return
  * 		Value in celsius.
  */
-float ADC_Handler::adc_calculate_sensor_temp(unsigned short value, float vref) {
+float adc_calculate_sensor_temp(unsigned short value, float vref) {
     float temp_voltage = adc_calculate_vin(value, vref);
 
     float celsius = 0;
@@ -223,7 +250,7 @@ float ADC_Handler::adc_calculate_sensor_temp(unsigned short value, float vref) {
  * @return
  * 		Value in mV.
  */
-float ADC_Handler::adc_calculate_sensor_voltage(unsigned short value, float vref) {
+float adc_calculate_sensor_voltage(unsigned short value, float vref) {
     float val = adc_calculate_vin(value, vref);
 
     val = val * ((VOLT_MAX - VOLT_MIN) / (ADC_VOLT_MAX - ADC_VOLT_MIN)); 
@@ -243,7 +270,7 @@ float ADC_Handler::adc_calculate_sensor_voltage(unsigned short value, float vref
  * @return
  * 		Value in mA.
  */
-float ADC_Handler::adc_calculate_sensor_current(unsigned short value, float vref)
+float adc_calculate_sensor_current(unsigned short value, float vref)
 {
     float val = adc_calculate_vin(value, vref);
 
@@ -264,7 +291,7 @@ float ADC_Handler::adc_calculate_sensor_current(unsigned short value, float vref
  * @return
  * 		Value in celsius.
  */
-float ADC_Handler::adc_calculate_sensor_pd(unsigned short value, float vref)
+float adc_calculate_sensor_pd(unsigned short value, float vref)
 {
     float val = adc_calculate_vin(value, vref);
 
@@ -292,7 +319,7 @@ float ADC_Handler::adc_calculate_sensor_pd(unsigned short value, float vref)
  * @return
  * 		Temperature value in celsius
  */
-float ADC_Handler::adc_get_tsense_temp(unsigned short value, float vref) {
+float adc_get_tsense_temp(unsigned short value, float vref) {
     float temp_celsius = 0;
 
     if(value >= 0x800) {
