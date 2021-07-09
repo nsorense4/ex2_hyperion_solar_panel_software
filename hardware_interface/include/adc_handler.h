@@ -23,7 +23,7 @@
 
 #include "common_defines.h"
 #include <stdint.h>
-#include "HL_i2c.h"
+#include "i2c.h"
 
 
 // AD7298 Control Register Map
@@ -78,6 +78,13 @@ float adc_calculate_sensor_current(unsigned short value, float vref);
 float adc_calculate_sensor_pd(unsigned short value, float vref);
 
 // convert internal temp sensor value
-float adc_get_tsense_temp(unsigned short value, float vref);
+float adc_get_tsense_temp(float vref);
+// convert all channels raw
+void adc_get_all_raw(void);
 
+// convert all channels vin
+void adc_get_all_vin(void);
+
+// convert all channels with meaning
+void adc_get_all_converted(int address, int config, unsigned short* data_vec, unsigned char* ch_vec, float* temp[], float* pd[], float* current, float* voltage);
 #endif

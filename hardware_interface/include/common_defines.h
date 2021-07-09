@@ -21,23 +21,53 @@
 #define COMMON_DEFINES_H
 
 //i2c defines
-#define ADC_SLAVE_ADDR          0x20
 #define ADC_i2c_PORT            i2cREG1
+
+//ADC Addresses on each panel
+#define ADC_SLAVE_ADDR                  0x23
+#define PORT_ADC_SLAVE_ADDR             0x20
+#define STAR_ADC_SLAVE_ADDR             0x23
+#define PORT_DEP_ADC_SLAVE_ADDR         0x22
+#define STAR_DEP_ADC_SLAVE_ADDR         0x28
+#define ZENITH_ADC_SLAVE_ADDR           0x2E
+#define PORT_2U_ADC_SLAVE_ADDR          0x20
+#define STAR_2U_ADC_SLAVE_ADDR          0x23
+#define PORT_DEP_2U_ADC_SLAVE_ADDR      0x22
+#define STAR_DEP_2U_ADC_SLAVE_ADDR      0x28
+#define ZENITH_2U_ADC_SLAVE_ADDR        0x2E
+#define ARKE_ADC_SLAVE_ADDR             0x2C
+#define NADIR_ADC_SLAVE_ADDR            0x2F
+#define NADIR_2U_ADC_SLAVE_ADDR         0x2F
 
 #define HIGH                    1
 #define LOW                     0
  
-#define ADC_VREF                2.5f       //V
+#define ADC_VREF                2.5f
+
+
  
-// VIN channels on ADC for sensors 
-#define ADC_CHANNEL_TEMP_1      0
-#define ADC_CHANNEL_TEMP_2      1
-#define ADC_CHANNEL_TEMP_3      2
-#define ADC_CHANNEL_PD_1        3
-#define ADC_CHANNEL_PD_2        4
-#define ADC_CHANNEL_PD_3        5
-#define ADC_CHANNEL_VOLT        6
-#define ADC_CHANNEL_CURRENT     7
+// VIN channels on ADC for sensors in configuration 1: all 3U panels - see datasheet
+#define CONFIG_1_ADC_CHANNEL_TEMP_1      0
+#define CONFIG_1_ADC_CHANNEL_TEMP_2      1
+#define CONFIG_1_ADC_CHANNEL_TEMP_3      2
+#define CONFIG_1_ADC_CHANNEL_PD_1        3
+#define CONFIG_1_ADC_CHANNEL_PD_2        4
+#define CONFIG_1_ADC_CHANNEL_PD_3        5
+#define CONFIG_1_ADC_CHANNEL_VOLT        6
+#define CONFIG_1_ADC_CHANNEL_CURRENT     7
+
+// VIN channels on ADC for sensors in configuration 2: ARKE, NADIR, NADIR 2U
+#define CONFIG_2_ADC_CHANNEL_TEMP_1      0
+#define CONFIG_2_ADC_CHANNEL_PD_1        1
+
+// VIN channels on ADC for sensors in configuration 3: 2U PANELS
+#define CONFIG_3_ADC_CHANNEL_TEMP_1      0
+#define CONFIG_3_ADC_CHANNEL_TEMP_2      1
+#define CONFIG_3_ADC_CHANNEL_PD_1        2
+#define CONFIG_3_ADC_CHANNEL_PD_2        3
+#define CONFIG_3_ADC_CHANNEL_VOLT        4
+#define CONFIG_3_ADC_CHANNEL_CURRENT     5
+
 
 // Temperature Sensor (LMT70) constants
 #define TEMP_VOLT_MAX           1.375f      //V
@@ -48,10 +78,11 @@
 // Voltage/Current Sensor Constants
 #define ADC_VOLT_MAX            2.5f        //V
 #define ADC_VOLT_MIN            0           //V
-#define VOLT_MAX                5.44f       //V
+#define VOLT_MAX                16.18f       //V
 #define VOLT_MIN                0           //V
-#define CURR_MAX                1.437f      //A
+#define CURR_MAX                0.588f      //A
 #define CURR_MIN                0           //A
+
 
 
 typedef enum channel_type_t{
